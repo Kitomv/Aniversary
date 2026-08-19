@@ -619,6 +619,12 @@ section { position: relative; z-index: 1; }
   position: relative; height: 150px; cursor: pointer;
   transform-style: preserve-3d; transition: transform .65s;
   -webkit-tap-highlight-color: transparent;
+  animation: cardIn .6s ease both;
+  animation-delay: calc(var(--i) * 120ms);
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .reason-card.flipped { transform: rotateY(180deg); }
 .reason-card .face {
@@ -630,7 +636,10 @@ section { position: relative; z-index: 1; }
 .reason-card .front {
   background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(255,220,235,0.85));
   border: 1.5px solid rgba(236,72,153,.3);
+  color: #be185d;
 }
+.reason-card .front small { color: #9d174d; font-size: .88rem; font-weight: 700; }
+.reason-card .front .n { color: #f9a8d4; font-size: .7rem; font-weight: 800; }
 .reason-card .front svg { width: 34px; height: 34px; margin-bottom: .5rem; }
 .reason-card .front .n {
   position: absolute; top: .55rem; left: .75rem;
@@ -1638,7 +1647,8 @@ reveals.forEach(r=>revealIO.observe(r));
   ];
   REASONS.forEach((r,i)=>{
     const card=document.createElement('div');
-    card.className='reason-card reveal';
+    card.className='reason-card';
+    card.style.setProperty('--i', i);
     card.innerHTML = `
       <div class="face front">
         <span class="n">#${i+1}</span>
