@@ -638,22 +638,28 @@ section { position: relative; z-index: 1; }
 }
 .reason-card {
   position: relative; height: 150px; cursor: pointer;
-  transform-style: preserve-3d; transition: transform .65s;
   -webkit-tap-highlight-color: transparent;
   animation: cardIn .6s ease both;
   animation-delay: calc(var(--i) * 120ms);
+  overflow: hidden;
 }
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.reason-card.flipped { transform: rotateY(180deg); }
+/* Flip 2D — aman di MIUI/Poco (3D preserve-3d sering blank) */
 .reason-card .face {
-  position: absolute; inset: 0; backface-visibility: hidden;
+  position: absolute; inset: 0;
   border-radius: 16px; display: flex; flex-direction: column;
   align-items: center; justify-content: center; text-align: center;
   padding: .9rem;
+  transition: opacity .35s ease, transform .35s ease;
 }
+.reason-card .back {
+  transform: translateY(16px); opacity: 0; pointer-events: none;
+}
+.reason-card.flipped .front { opacity: 0; transform: translateY(-16px); pointer-events: none; }
+.reason-card.flipped .back  { opacity: 1; transform: translateY(0);    pointer-events: auto; }
 .reason-card .front {
   background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(255,220,235,0.85));
   border: 1.5px solid rgba(236,72,153,.3);
@@ -671,7 +677,6 @@ section { position: relative; z-index: 1; }
   background: linear-gradient(135deg, rgba(244,114,182,.25), rgba(255,182,193,.3));
   border: 1.5px solid rgba(236,72,153,.45);
   font-size: .88rem; line-height: 1.55; color: #7f1d4a;
-  transform: rotateY(180deg);
 }
 
 /* ===== CONFETTI ===== */
