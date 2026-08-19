@@ -561,6 +561,116 @@ section { position: relative; z-index: 1; }
 }
 .hold-note { color: var(--muted); font-size: .85rem; letter-spacing: .04em; }
 
+/* ===== MUSIC TOGGLE ===== */
+#music-toggle {
+  position: fixed; right: 1rem; bottom: 1rem; z-index: 800;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(244,114,182,.9), rgba(168,85,247,.9));
+  border: none; cursor: pointer; display: grid; place-items: center;
+  box-shadow: 0 6px 24px rgba(244,114,182,.45);
+  opacity: 0; pointer-events: none; transform: scale(.6);
+  transition: opacity .5s, transform .5s, filter .3s;
+}
+#music-toggle.show { opacity: 1; pointer-events: auto; transform: scale(1); }
+#music-toggle svg { width: 24px; height: 24px; }
+#music-toggle.muted { filter: grayscale(.7); }
+
+/* ===== STATS ===== */
+#stats-section { padding: 3.5rem 1rem; text-align: center; }
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem; max-width: 760px; margin: 0 auto;
+}
+.stat-card {
+  background: var(--glass); border: 1px solid rgba(244,114,182,.22);
+  border-radius: var(--r); padding: 1.5rem 1rem;
+  backdrop-filter: blur(12px); box-shadow: 0 6px 26px rgba(168,85,247,.14);
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--gold), var(--pink)); opacity:.7;
+}
+.stat-num {
+  font-size: 2.3rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--gold), var(--pink));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stat-lbl {
+  margin-top: .35rem; font-size: .75rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .12em;
+}
+
+/* ===== ALASAN (FLIP CARDS) ===== */
+#reasons-section { padding: 5rem 1rem; }
+.reasons-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem; max-width: 760px; margin: 0 auto; perspective: 1000px;
+}
+.reason-card {
+  position: relative; height: 150px; cursor: pointer;
+  transform-style: preserve-3d; transition: transform .65s;
+  -webkit-tap-highlight-color: transparent;
+}
+.reason-card.flipped { transform: rotateY(180deg); }
+.reason-card .face {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  border-radius: 16px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  padding: .9rem;
+}
+.reason-card .front {
+  background: linear-gradient(135deg, rgba(244,114,182,.16), rgba(168,85,247,.16));
+  border: 1px solid rgba(244,114,182,.35);
+}
+.reason-card .front svg { width: 34px; height: 34px; margin-bottom: .5rem; }
+.reason-card .front .n {
+  position: absolute; top: .55rem; left: .75rem;
+  font-size: .72rem; color: var(--muted); font-weight: 700;
+}
+.reason-card .front small { color: var(--text); font-size: .9rem; font-weight: 600; }
+.reason-card .back {
+  background: linear-gradient(135deg, rgba(168,85,247,.3), rgba(244,114,182,.3));
+  border: 1px solid rgba(244,114,182,.55);
+  font-size: .88rem; line-height: 1.55; color: var(--text);
+  transform: rotateY(180deg);
+}
+
+/* ===== CONFETTI ===== */
+.confetti-wrap {
+  position: fixed; inset: 0; z-index: 1500;
+  pointer-events: none; overflow: hidden;
+}
+.confetti-p {
+  position: absolute; top: -7vh; width: 10px; height: 16px;
+  border-radius: 2px; opacity: 0;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translateY(0) rotate(0) var(--tw); opacity: 1; }
+  100% { transform: translateY(114vh) rotate(720deg) var(--tw); opacity: .1; }
+}
+.confetti-heart { width: 15px; height: 15px; }
+.confetti-heart::before, .confetti-heart::after {
+  content:''; position:absolute; width: 9px; height: 14px; top:0;
+  background: var(--cc, #f472b6); border-radius: 12px 12px 0 12px;
+  animation: none;
+}
+.confetti-heart::before { left: 0; transform: rotate(-45deg); }
+.confetti-heart::after  { right: 0; transform: rotate(45deg); }
+
+/* ===== SURPRISE BUTTON ===== */
+.surprise-btn {
+  margin-top: 2.4rem; padding: .95rem 2.2rem; border-radius: 40px;
+  cursor: pointer; background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: #fff; font-weight: 700; font-size: 1rem; border: none;
+  box-shadow: 0 8px 30px rgba(244,114,182,.5); transition: transform .2s;
+  letter-spacing: .03em;
+}
+.surprise-btn:hover  { transform: translateY(-3px) scale(1.03); }
+.surprise-btn:active { transform: scale(.96); }
+
 /* ===== RESPONSIVE MOBILE ===== */
 @media (max-width: 480px) {
   /* Layer gates */
@@ -754,6 +864,19 @@ section { position: relative; z-index: 1; }
       <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" fill="url(#ggold)"/>
       <path d="M8.2 12.2l2.4 2.4 5.2-5.4" fill="none" stroke="#2a0a45" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
+
+    <!-- MUSIC NOTE -->
+    <symbol id="icon-music" viewBox="0 0 24 24">
+      <path d="M9 18.5V5.8a1.6 1.6 0 0 1 1.3-1.6l7.6-1.6a1.6 1.6 0 0 1 1.9 1.6v10.2" fill="none" stroke="url(#gpink)" stroke-width="2" stroke-linecap="round"/>
+      <ellipse cx="6.6" cy="18.6" rx="2.6" ry="2.2" fill="url(#ggold)"/>
+      <ellipse cx="17.6" cy="15.6" rx="2.6" ry="2.2" fill="url(#ggold)"/>
+    </symbol>
+
+    <!-- PAUSE -->
+    <symbol id="icon-pause" viewBox="0 0 24 24">
+      <rect x="6" y="4" width="4.5" height="16" rx="2" fill="url(#gpink)"/>
+      <rect x="13.5" y="4" width="4.5" height="16" rx="2" fill="url(#gpink)"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -836,9 +959,7 @@ section { position: relative; z-index: 1; }
       <circle cx="80" cy="80" r="72"/>
       <circle class="prog" id="hold-prog" cx="80" cy="80" r="72"/>
     </svg>
-    <div class="hold-btn" id="hold-btn"
-         onmousedown="holdStart()" onmouseup="holdEnd()" onmouseleave="holdEnd()"
-         ontouchstart="holdStart(event)" ontouchend="holdEnd()">
+    <div class="hold-btn" id="hold-btn">
       <svg><use href="#icon-heart-open"/></svg>
       <span id="hold-label">Tahan</span>
     </div>
@@ -848,6 +969,12 @@ section { position: relative; z-index: 1; }
 
 <canvas id="stars-canvas"></canvas>
 <div class="hearts-bg" id="hearts-bg"></div>
+
+<!-- MUSIC TOGGLE -->
+<button id="music-toggle" onclick="window.toggleMusic && toggleMusic()">
+  <svg id="music-icon"><use href="#icon-music"/></svg>
+</button>
+<div class="confetti-wrap" id="confetti-wrap"></div>
 
 <!-- LIGHTBOX -->
 <div id="lightbox">
@@ -936,7 +1063,37 @@ section { position: relative; z-index: 1; }
     <span class="seal" title="Kita"><svg><use href="#icon-cameo"/></svg></span>
     <span class="seal" title="Cahaya"><svg><use href="#icon-star"/></svg></span>
   </div>
+  <button class="surprise-btn" onclick="window.launchConfetti && launchConfetti()">
+    🎉 Klik untuk Kejutan!
+  </button>
   <div class="signature">— Dengan sepenuh hati, Kamu 🌹</div>
+</section>
+
+<!-- STATS SECTION -->
+<section id="stats-section" class="reveal">
+  <div class="heading-deco">
+    <span class="line"></span>
+    <div class="icon-badge"><svg class="icon" style="width:24px;height:24px"><use href="#icon-star"/></svg></div>
+    <h2>Kita dalam Angka</h2>
+    <div class="line right"></div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" data-target-days>0</div><div class="stat-lbl">Hari Bersama</div></div>
+    <div class="stat-card"><div class="stat-num" data-target-photos>0</div><div class="stat-lbl">Kenangan Tersimpan</div></div>
+    <div class="stat-card"><div class="stat-num" data-target-months>0</div><div class="stat-lbl">Bulan Cerita</div></div>
+    <div class="stat-card"><div class="stat-num" data-target-infinite>∞</div><div class="stat-lbl">Cinta Untukmu</div></div>
+  </div>
+</section>
+
+<!-- REASONS SECTION -->
+<section id="reasons-section" class="reveal">
+  <div class="heading-deco">
+    <span class="line"></span>
+    <div class="icon-badge"><svg class="icon" style="width:24px;height:24px"><use href="#icon-heart-seal"/></svg></div>
+    <h2>Alasan Aku Sayang Kamu</h2>
+    <div class="line right"></div>
+  </div>
+  <div class="reasons-grid" id="reasons-grid"></div>
 </section>
 
 <script>
@@ -1070,8 +1227,15 @@ const CONFIG = {
     }
   });
 
-  /* Blokir menu konteks saat tahan (HP) */
-  document.getElementById('hold-btn').addEventListener('contextmenu', e=>e.preventDefault());
+  /* Blokir menu konteks + attach hold events */
+  const holdBtn = document.getElementById('hold-btn');
+  holdBtn.addEventListener('contextmenu', e=>e.preventDefault());
+  holdBtn.addEventListener('mousedown',   holdStart, { passive: false });
+  holdBtn.addEventListener('mouseup',     holdEnd);
+  holdBtn.addEventListener('mouseleave',  holdEnd);
+  holdBtn.addEventListener('touchstart',  holdStart, { passive: false });
+  holdBtn.addEventListener('touchend',    holdEnd,   { passive: false });
+  holdBtn.addEventListener('touchcancel', holdEnd,   { passive: false });
 
   /* Lock scroll + init */
   document.body.style.overflow='hidden';
@@ -1351,6 +1515,163 @@ const revealIO = new IntersectionObserver(entries=>{
   entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
 },{threshold:.12});
 reveals.forEach(r=>revealIO.observe(r));
+
+/* ===== MUSIC LATAR (WebAudio, tanpa file) ===== */
+(function(){
+  let ctx=null, master=null, playing=false;
+  const toggleBtn = document.getElementById('music-toggle');
+
+  function buildSong(){
+    /* Lagu sederhana nan lembut — nada-nada hangat */
+    const ready = Date.now();
+    const seq = [
+      262,293,330,392, 330,293,262,220,
+      262,293,330,392, 494,440,392,330
+    ];
+    const masterGain = ctx.createGain();
+    masterGain.gain.value = 0.16;
+    masterGain.connect(ctx.destination);
+
+    const bass = ctx.createOscillator();
+    bass.type='triangle';
+    bass.frequency.value=65.4;
+    const bassGain=ctx.createGain(); bassGain.gain.value=.05;
+    bass.connect(bassGain); bassGain.connect(masterGain);
+    bass.start(ready);
+
+    function playNote(freq, t, dur){
+      const o=ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.value=freq;
+      const g=ctx.createGain();
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.linearRampToValueAtTime(0.16, t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+      o.connect(g); g.connect(masterGain);
+      o.start(t); o.stop(t+dur+.1);
+      return o;
+    }
+    seq.forEach((f,i)=>{
+      const t = ready + i*0.32;
+      playNote(f, t, 1.1);
+      playNote(f*2, t, 0.7);
+    });
+    master = masterGain;
+    setTimeout(()=>{ try{ masterGain.disconnect(); bass.stop(); }catch(e){} }, ready+seq.length*320);
+  }
+
+  window.toggleMusic = ()=>{
+    if(!ctx){ ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+    if(playing){
+      playing=false;
+      master && master.gain.setValueAtTime(0, ctx.currentTime);
+      toggleBtn.classList.add('muted');
+      document.getElementById('music-icon').setAttribute('href','#icon-music');
+    } else {
+      if(ctx.state==='suspended') ctx.resume();
+      playing=true;
+      if(!master) buildSong();
+      else master.gain.setValueAtTime(0.16, ctx.currentTime);
+      toggleBtn.classList.remove('muted');
+      document.getElementById('music-icon').setAttribute('href','#icon-pause');
+    }
+  };
+
+  /* Show button after unlock */
+  const gate = document.getElementById('layer1');
+  new MutationObserver(()=>{
+    if(gate.classList.contains('hidden')){
+      toggleBtn.classList.add('show');
+    }
+  }).observe(gate,{attributes:true,attributeFilter:['class']});
+})();
+
+/* ===== STATS COUNTER (animated) ===== */
+(function(){
+  const sec = document.getElementById('stats-section');
+  if(!sec) return;
+  const D = CONFIG.startDate;
+  const months = Math.round((new Date() - D)/ 1000 / 60/60/24/30.4);
+  const days   = Math.floor((new Date() - D)/864e5);
+  const targets = {
+    days:    days,
+    photos:  PHOTOS.length,
+    months:  months
+  };
+  const io = new IntersectionObserver(entries=>{
+    if(!entries[0].isIntersecting) return;
+    io.disconnect();
+    [['data-target-days',targets.days],['data-target-photos',targets.photos],['data-target-months',targets.months]]
+    .forEach(([sel,val])=>{
+      const el = document.querySelector(`[${sel}]`);
+      const t0 = performance.now();
+      const dur=1200;
+      (function step(t){
+        const p=Math.min(1,(t-t0)/dur);
+        el.textContent = Math.round(val*(1-Math.pow(1-p,3))).toLocaleString('id-ID');
+        if(p<1) requestAnimationFrame(step);
+      })(t0);
+    });
+  },{threshold:.4});
+  io.observe(sec);
+})();
+
+/* ===== ALASAN SAYANG (flip cards) ===== */
+(function(){
+  const grid = document.getElementById('reasons-grid');
+  if(!grid) return;
+  const icons = ['icon-heart-seal','icon-sparkle','icon-cameo','icon-gem','icon-star','icon-heart-seal'];
+  const REASONS=[
+    ["Senyummu","Menerangi hari yang paling gelap sekalipun."],
+    ["Tawamu","Melodi favorit yang selalu bikin hari jadi lebih ringan."],
+    ["Kebaikanmu","Kamu peduli hal-hal kecil yang orang lain anggap sepele."],
+    ["Cara Kamu Dengar","Kamu benar-benar dengar, bukan sekadar mendengarkan."],
+    ["Kehangatanmu","Dekat kamu serasa di rumah yang paling tenang."],
+    ["Kamu yang Apa Adanya","Nggak perlu jadi siapa-siapa, cukup jadi kamu."]
+  ];
+  REASONS.forEach((r,i)=>{
+    const card=document.createElement('div');
+    card.className='reason-card reveal';
+    card.innerHTML = `
+      <div class="face front">
+        <span class="n">#${i+1}</span>
+        <svg><use href="#${icons[i%icons.length]}"/></svg>
+        <small>${r[0]}</small>
+      </div>
+      <div class="face back">${r[1]}</div>`;
+    card.addEventListener('click',()=>card.classList.toggle('flipped'));
+    grid.appendChild(card);
+  });
+})();
+
+/* ===== CONFETTI SURPRISE ===== */
+window.launchConfetti = function(){
+  const wrap = document.getElementById('confetti-wrap');
+  const colors=['#f472b6','#a855f7','#fbbf24','#e879f9','#fda4af','#c084fc','#fde68a'];
+  const total = 140;
+  for(let i=0;i<total;i++){
+    const p=document.createElement('div');
+    p.className = 'confetti-p';
+    if(i%7===0) p.classList.add('confetti-heart');
+    p.style.setProperty('--cc', colors[i%colors.length]);
+    p.style.left = Math.random()*100+'vw';
+    p.style.background = p.classList.contains('confetti-heart') ? 'transparent' : colors[i%colors.length];
+    p.style.animationDuration = (2.4+Math.random()*2.6)+'s';
+    p.style.animationDelay = (Math.random()*.8)+'s';
+    p.style.setProperty('--tw', `translateX(${(Math.random()-.5)*260}px) rotate(${Math.random()*360}deg)`);
+    wrap.appendChild(p);
+    setTimeout(()=>p.remove(), 7000);
+  }
+  /* Bunyi "pop" halus via WebAudio */
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const t=ctx.currentTime;
+    const o=ctx.createOscillator(); o.type='triangle'; o.frequency.setValueAtTime(660,t);
+    o.frequency.exponentialRampToValueAtTime(990,t+.25);
+    const g=ctx.createGain(); g.gain.setValueAtTime(.08,t); g.gain.exponentialRampToValueAtTime(.001,t+.5);
+    o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+.6);
+  }catch(e){}
+};
 </script>
 </body>
 </html>
