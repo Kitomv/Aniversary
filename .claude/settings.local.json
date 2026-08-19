@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Administrator\\\\Downloads\\\\1Aniv\" | Where-Object { $_.Extension -match \"\\\\.\\(jpg|jpeg|png\\)\" -and $_.Name -notmatch \"Kang Huda|Omnivision|iPhone 17|Perfect Color|iphone\" } | Sort-Object LastWriteTime | Select-Object Name, LastWriteTime | Format-Table -AutoSize | Out-String -Width 300)"
+    ]
+  }
+}
