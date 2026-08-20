@@ -170,6 +170,7 @@
     <div class="layer-step now" id="lp0"></div>
     <div class="layer-step" id="lp1"></div>
     <div class="layer-step" id="lp2"></div>
+    <div class="layer-step" id="lp3"></div>
   </div>
   <div class="layer-icon" style="animation:pulse 2.2s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(244,114,182,.6))">
     <svg><use href="#icon-lock"/></svg>
@@ -210,7 +211,6 @@
     <div class="layer-step now" id="lp1b"></div>
     <div class="layer-step"></div>
     <div class="layer-step"></div>
-    <div class="layer-step"></div>
   </div>
   <div class="layer-icon" style="filter:drop-shadow(0 0 24px rgba(251,191,36,.5))">
     <svg><use href="#icon-riddle"/></svg>
@@ -229,39 +229,12 @@
   <div class="lock-error" id="riddle-error"></div>
 </div>
 
-<!-- ===== LAYER 3 : DRAG & DROP SUSUN FOTO ===== -->
+<!-- ===== LAYER 3 : KETIK KATA RAHASIA ===== -->
 <div id="layer3" class="layer hidden">
   <div class="layer-progress">
     <div class="layer-step done"></div>
     <div class="layer-step done"></div>
     <div class="layer-step now" id="lp3a"></div>
-    <div class="layer-step"></div>
-    <div class="layer-step"></div>
-  </div>
-  <div class="layer-icon" style="filter:drop-shadow(0 0 22px rgba(236,72,153,.5))">
-    <svg style="width:64px;height:64px;margin-bottom:.2rem"><use href="#icon-cameo"/></svg>
-  </div>
-  <h2>Susun Kembali Momen Kita</h2>
-  <p class="layer-hint" style="margin-bottom:1.2rem">
-    Foto kita terbagi jadi 4 potongan. Seret tiap potongan ke tempatnya — atau cukup tap potongannya, dia otomatis pindah ke slot yang kosong.
-  </p>
-  <div class="dd-dropzone" id="ddDrop">
-    <div class="dd-slot" data-idx="0"></div>
-    <div class="dd-slot" data-idx="1"></div>
-    <div class="dd-slot" data-idx="2"></div>
-    <div class="dd-slot" data-idx="3"></div>
-  </div>
-  <div class="dd-tray" id="ddTray"></div>
-  <button class="puzzle-reset" onclick="ddReset()">🔀 Acak Ulang</button>
-</div>
-
-<!-- ===== LAYER 4 : KETIK KATA RAHASIA ===== -->
-<div id="layer4" class="layer hidden">
-  <div class="layer-progress">
-    <div class="layer-step done"></div>
-    <div class="layer-step done"></div>
-    <div class="layer-step done"></div>
-    <div class="layer-step now" id="lp4a"></div>
     <div class="layer-step"></div>
   </div>
   <div class="layer-icon" style="filter:drop-shadow(0 0 22px rgba(236,72,153,.5))">
@@ -280,14 +253,13 @@
   <button class="word-back" onclick="wordBack()">⌫ Hapus</button>
 </div>
 
-<!-- ===== LAYER 5 : TAHAN HATI ===== -->
-<div id="layer5" class="layer hidden">
+<!-- ===== LAYER 4 : TAHAN HATI ===== -->
+<div id="layer4" class="layer hidden">
   <div class="layer-progress">
     <div class="layer-step done"></div>
     <div class="layer-step done"></div>
     <div class="layer-step done"></div>
-    <div class="layer-step done"></div>
-    <div class="layer-step now" id="lp5a"></div>
+    <div class="layer-step now" id="lp4a"></div>
   </div>
   <h2>Hampir Sampai!</h2>
   <p class="layer-hint" style="margin-bottom:1.8rem">

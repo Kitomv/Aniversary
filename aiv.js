@@ -10,18 +10,18 @@ const CONFIG = {
   pin       : "070925",                       // ← PIN akses (6 digit)
 };
 
-/* ===== 5 LAYER GATE ===== */
+/* ===== 4 LAYER GATE ===== */
 (function(){
   const PIN     = CONFIG.pin;
-  const WORD    = 'AISRYNNN';           // ← kata rahasia layer 4
+  const WORD    = 'AISRYNNN';           // ← kata rahasia layer 3
   const KEYEL   = document.getElementById('lock-error');
   const RIDEL   = document.getElementById('riddle-error');
   const WORDEL  = document.getElementById('word-error');
   let input = '';
   let current = 1;
   const dots  = ['d0','d1','d2','d3','d4','d5'];
-  const TOTAL_LAYERS = 5;
-  const layerIds = ['layer1','layer2','layer3','layer4','layer5'];
+  const TOTAL_LAYERS = 4;
+  const layerIds = ['layer1','layer2','layer3','layer4'];
 
   /* --- Layer navigation helpers --- */
   function showLayer(n){
@@ -70,123 +70,7 @@ const CONFIG = {
     }
   };
 
-  /* --- Layer 3: Drag & drop susun 4 potongan foto --- */
-  const DD_N = 2;                  // 2x2 = 4 potong
-  const DD_TOTAL = DD_N*DD_N;
-  let ddImg = '';
-  let ddState = [];                // slot → potongan id (0..3) atau -1 kosong
-  let ddTrayIdx = [];              // daftar potongan yang masih di tray
-  let ddSolved = false;
-
-  function selectDdImage(){
-    try{
-      const slides = window.AIV_DATA && window.AIV_DATA.slides;
-      // cari foto dari babak 2/3 (foto tengah) yang pasti ada
-      const cand = [slides[1], slides[2]];
-      for(const s of cand){
-        if(s && s.photos && s.photos.length){
-          const p = s.photos[Math.floor(s.photos.length/2)];
-          if(p) return p.src;
-        }
-      }
-    }catch(e){}
-    return 'photos-aniv/web/IMG-20251115-WA0001.jpg';
-  }
-  function bgFor(pieceId){
-    // potongan pieceId → posisi background di foto utuh
-    const r = Math.floor(pieceId/DD_N), c = pieceId%DD_N;
-    const posX = c*(100/(DD_N-1)), posY = r*(100/(DD_N-1));
-    return `background-image:url('${ddImg}');background-size:${DD_N*100}% ${DD_N*100}%;background-position:${posX}% ${posY}%`;
-  }
-  function ddReset(){
-    if(current!==3 && ddImg!=='' ) return;  // init (ddImg belum set) boleh jalan
-    ddSolved = false;
-    ddState = Array(DD_TOTAL).fill(-1);
-    ddTrayIdx = [0,1,2,3];
-    // acak urutan tray
-    for(let i=ddTrayIdx.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [ddTrayIdx[i],ddTrayIdx[j]]=[ddTrayIdx[j],ddTrayIdx[i]];
-    }
-    renderDd();
-  }
-  function renderDd(){
-    const drop = document.getElementById('ddDrop');
-    const tray = document.getElementById('ddTray');
-    if(!drop || !tray) return;
-    if(!ddImg) ddImg = selectDdImage();
-    // render slot
-    drop.innerHTML='';
-    ddState.forEach((pieceId, i)=>{
-      const slot = document.createElement('div');
-      slot.className = 'dd-slot' + (pieceId>-1 ? ' dd-filled':'');
-      if(pieceId>-1) slot.setAttribute('style', bgFor(pieceId));
-      slot.setAttribute('data-idx', i);
-      slot.ondragover = e=>{ e.preventDefault(); };
-      slot.ondrop = e=>{
-        e.preventDefault();
-        const pid = +(e.dataTransfer.getData('text/plain'));
-        if(Number.isInteger(pid) && ddTrayIdx.includes(pid)) placePiece(pid, i);
-      };
-      slot.addEventListener('click', ()=>{ slotClick(i); });
-      drop.appendChild(slot);
-    });
-    // render tray
-    tray.innerHTML='';
-    ddTrayIdx.forEach(pieceId=>{
-      const p = document.createElement('div');
-      p.className='dd-piece';
-      p.setAttribute('style', bgFor(pieceId));
-      p.draggable = true;
-      p.addEventListener('dragstart', e=>{
-        e.dataTransfer.setData('text/plain', String(pieceId));
-        p.classList.add('dragging');
-      });
-      p.addEventListener('dragend', ()=>p.classList.remove('dragging'));
-      p.addEventListener('click', ()=>{ trayClick(pieceId); });
-      tray.appendChild(p);
-    });
-  }
-  function placePiece(pieceId, slotIdx){
-    // taruh potongan ke slot; kalau slot diisi, kembalikan ke tray
-    const prev = ddState[slotIdx];
-    ddState[slotIdx] = pieceId;
-    ddTrayIdx = ddTrayIdx.filter(x=>x!==pieceId);
-    if(prev>-1) ddTrayIdx.push(prev);
-    renderDd();
-    checkDdWin();
-  }
-  function slotClick(i){
-    if(current!==3 || ddSolved) return;
-    // kalau klik slot terisi, kembalikan ke tray
-    if(ddState[i]>-1){
-      ddTrayIdx.push(ddState[i]);
-      ddState[i] = -1;
-      renderDd();
-      return;
-    }
-    // kalau kosong & ada potongan di tray → ambil pertama
-    if(ddTrayIdx.length){
-      const pid = ddTrayIdx[0];
-      placePiece(pid, i);
-    }
-  }
-  function trayClick(pieceId){
-    if(current!==3 || ddSolved) return;
-    // kalau ada slot kosong → taruh di slot kosong pertama
-    const empty = ddState.indexOf(-1);
-    if(empty>-1) placePiece(pieceId, empty);
-  }
-  function checkDdWin(){
-    const won = ddState.every((v,i)=>v===i);
-    if(won){
-      ddSolved=true;
-      document.getElementById('ddDrop').classList.add('dd-glow');
-      setTimeout(()=>{ showLayer(4); }, 600);
-    }
-  }
-
-  /* --- Layer 4: Ketik kata rahasia --- */
+  /* --- Layer 3: Ketik kata rahasia --- */
   function wordRender(){
     const slots = document.querySelectorAll('#word-slots .w-slot');
     slots.forEach((s,i)=>{
@@ -201,14 +85,14 @@ const CONFIG = {
     setTimeout(()=>{ WORDEL.textContent=''; }, 1800);
   }
   window.wordPress = ch=>{
-    if(current!==4) return;
+    if(current!==3) return;
     if(input.length>=WORD.length) return;
     input += ch; wordRender();
     if(input.length===WORD.length){
-      input.toUpperCase()===WORD.toUpperCase() ? setTimeout(()=>showLayer(5), 200) : setTimeout(wordFail, 200);
+      input.toUpperCase()===WORD.toUpperCase() ? setTimeout(()=>showLayer(4), 200) : setTimeout(wordFail, 200);
     }
   };
-  window.wordBack = ()=>{ if(current!==4) return; input = input.slice(0,-1); wordRender(); };
+  window.wordBack = ()=>{ if(current!==3) return; input = input.slice(0,-1); wordRender(); };
 
   /* --- Layer 5: Hold-to-reveal --- */
   const HOLD_MS = 3000;
@@ -220,7 +104,7 @@ const CONFIG = {
     if(ring) ring.style.strokeDasharray = CIRC+'px';
   }
   function holdStart(ev){
-    if(current!==5) return;
+    if(current!==4) return;
     if(ev && typeof ev.preventDefault==='function') ev.preventDefault();
     if(isHolding) return;
     isHolding = true;
@@ -271,7 +155,7 @@ const CONFIG = {
       if(e.key==='Backspace') window.lkBack();
       if(e.key==='Enter' && input.length){ input===PIN ? pinSuccess() : pinFail(); }
     }
-    if(current===4){
+    if(current===3){
       if(/^[a-zA-Z]$/.test(e.key)) window.wordPress(e.key.toUpperCase());
       if(e.key==='Backspace') window.wordBack();
     }
@@ -307,10 +191,6 @@ const CONFIG = {
       kb.appendChild(row);
     });
   })();
-
-  /* --- Init drag & drop (layer 3) --- */
-  ddImg = selectDdImage();
-  ddReset();
 
   /* Lock scroll + init */
   document.body.style.overflow='hidden';
@@ -675,10 +555,9 @@ reveals.forEach(r=>revealIO.observe(r));
   ['copy','cut','paste'].forEach(ev=>{
     document.addEventListener(ev, e=>{ e.preventDefault(); });  /* disable copy */
   });
-  /* blokir drag HANYA untuk img non-dropzone biar foto ga keseret (puzzle tetap bebas) */
+  /* blokir drag HANYA untuk img non-dropzone biar foto ga keseret */
   document.addEventListener('dragstart', e=>{
-    const isDD = e.target.classList && e.target.classList.contains('dd-piece');
-    if(!isDD) e.preventDefault();
+    if(e.target && e.target.tagName==='IMG') e.preventDefault();
   });
   document.addEventListener('keydown', e=>{
     const mod = e.ctrlKey || e.metaKey;
