@@ -10,24 +10,28 @@ const CONFIG = {
   pin       : "070925",                       // ← PIN akses (6 digit)
 };
 
-/* ===== 3 LAYER GATE ===== */
+/* ===== 5 LAYER GATE ===== */
 (function(){
   const PIN     = CONFIG.pin;
+  const WORD    = 'AISRYNNN';           // ← kata rahasia layer 4
   const KEYEL   = document.getElementById('lock-error');
   const RIDEL   = document.getElementById('riddle-error');
+  const WORDEL  = document.getElementById('word-error');
   let input = '';
   let current = 1;
   const dots  = ['d0','d1','d2','d3','d4','d5'];
+  const TOTAL_LAYERS = 5;
+  const layerIds = ['layer1','layer2','layer3','layer4','layer5'];
 
   /* --- Layer navigation helpers --- */
   function showLayer(n){
     current = n;
-    ['layer1','layer2','layer3'].forEach((id,i)=>{
+    layerIds.forEach((id,i)=>{
       document.getElementById(id).classList.toggle('hidden', (i+1)!==n);
     });
   }
   function advance(){
-    if(current===3) unlock();
+    if(current===TOTAL_LAYERS) unlock();
     else showLayer(current+1);
   }
 
@@ -66,7 +70,101 @@ const CONFIG = {
     }
   };
 
-  /* --- Layer 3: Hold-to-reveal --- */
+  /* --- Layer 3: Susun potongan foto (3x3 sliding puzzle) --- */
+  const PUZ_N = 3;
+  const PUZ   = PUZ_N*PUZ_N;     // 9
+  let blank  = PUZ-1;            // indeks kosong mulai dari bawah-kanan
+  let board  = [];               // isi tiap sel → potongan id, -1 = kosong
+  let puzzleSolved = false;
+
+  function selectPuzzleImage(){
+    // pilih foto dari data slides (foto tengah babak 2 atau 3) yang pasti live
+    try{
+      const slides = window.AIV_DATA && window.AIV_DATA.slides;
+      if(slides && slides[1] && slides[1].photos && slides[1].photos.length){
+        return slides[1].photos[Math.floor(slides[1].photos.length/2)].src;
+      }
+    }catch(e){}
+    return 'photos-aniv/web/IMG-20251115-WA0001.jpg';
+  }
+  function shuffleBoard(){
+    // acak legal via langkah acak dari solved state (biar pasti solvable)
+    board = Array.from({length:PUZ}, (_,i)=>i);
+    blank = PUZ-1;
+    for(let s=0; s<120; s++){
+      const nbr = [];
+      const r = Math.floor(blank/PUZ_N), c = blank%PUZ_N;
+      if(r>0) nbr.push(blank-PUZ_N);
+      if(r<PUZ_N-1) nbr.push(blank+PUZ_N);
+      if(c>0) nbr.push(blank-1);
+      if(c<PUZ_N-1) nbr.push(blank+1);
+      const pick = nbr[Math.floor(Math.random()*nbr.length)];
+      board[blank]=board[pick]; board[pick]=-1; blank=pick;
+    }
+  }
+  function renderPuzzle(){
+    const grid = document.getElementById('puzzle-grid');
+    if(!grid) return;
+    const img = selectPuzzleImage();
+    grid.innerHTML='';
+    board.forEach((pieceId, i)=>{
+      const cell = document.createElement('div');
+      cell.className = 'p-cell';
+      if(pieceId===-1){ cell.classList.add('p-blank'); }
+      else{
+        const r = Math.floor(i/PUZ_N), c = i%PUZ_N;
+        const pr= Math.floor(pieceId/PUZ_N), pc= pieceId%PUZ_N;
+        cell.style.backgroundImage = `url('${img}')`;
+        cell.style.backgroundSize = `${PUZ_N*100}% ${PUZ_N*100}%`;
+        cell.style.backgroundPosition = `${pc*(100/(PUZ_N-1))}% ${pr*(100/(PUZ_N-1))}%`;
+        cell.classList.add('p-piece');
+      }
+      cell.addEventListener('click', ()=>tryMove(i));
+      grid.appendChild(cell);
+    });
+  }
+  function tryMove(i){
+    if(current!==3 || puzzleSolved) return;
+    // sel i harus adjacent ke blank
+    const dr = Math.abs(Math.floor(i/PUZ_N)-Math.floor(blank/PUZ_N));
+    const dc = Math.abs((i%PUZ_N)-(blank%PUZ_N));
+    if(dr+dc!==1) return;
+    board[blank]=board[i]; board[i]=-1; blank=i;
+    renderPuzzle();
+    // cek menang
+    const won = board.every((v,i)=>v===i);
+    if(won){ puzzleSolved=true; setTimeout(()=>showLayer(4), 550); }
+  }
+  function resetPuzzle(){
+    puzzleSolved=false; shuffleBoard(); renderPuzzle();
+  }
+  window.puzzleReset = ()=>{ if(current===3) resetPuzzle(); };
+
+  /* --- Layer 4: Ketik kata rahasia --- */
+  function wordRender(){
+    const slots = document.querySelectorAll('#word-slots .w-slot');
+    slots.forEach((s,i)=>{
+      s.textContent = i<input.length ? input[i] : '';
+      s.classList.toggle('filled', i<input.length);
+    });
+  }
+  function wordFail(){
+    input=''; wordRender();
+    WORDEL.textContent = 'Belum tepat... ingat kata rahasia kita 💭';
+    WORDEL.classList.remove('shake'); void WORDEL.offsetWidth; WORDEL.classList.add('shake');
+    setTimeout(()=>{ WORDEL.textContent=''; }, 1800);
+  }
+  window.wordPress = ch=>{
+    if(current!==4) return;
+    if(input.length>=WORD.length) return;
+    input += ch; wordRender();
+    if(input.length===WORD.length){
+      input.toUpperCase()===WORD.toUpperCase() ? setTimeout(()=>showLayer(5), 200) : setTimeout(wordFail, 200);
+    }
+  };
+  window.wordBack = ()=>{ if(current!==4) return; input = input.slice(0,-1); wordRender(); };
+
+  /* --- Layer 5: Hold-to-reveal --- */
   const HOLD_MS = 3000;
   const CIRC   = 2*Math.PI*72;
   let holdTimer=null, holdStartT=0, isHolding=false;
@@ -76,7 +174,7 @@ const CONFIG = {
     if(ring) ring.style.strokeDasharray = CIRC+'px';
   }
   function holdStart(ev){
-    if(current!==3) return;
+    if(current!==5) return;
     if(ev && typeof ev.preventDefault==='function') ev.preventDefault();
     if(isHolding) return;
     isHolding = true;
@@ -116,7 +214,7 @@ const CONFIG = {
 
   /* --- Unlock --- */
   function unlock(){
-    ['layer1','layer2','layer3'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+    layerIds.forEach(id=>document.getElementById(id).classList.add('hidden'));
     document.body.style.overflow='';
   }
 
@@ -127,17 +225,46 @@ const CONFIG = {
       if(e.key==='Backspace') window.lkBack();
       if(e.key==='Enter' && input.length){ input===PIN ? pinSuccess() : pinFail(); }
     }
+    if(current===4){
+      if(/^[a-zA-Z]$/.test(e.key)) window.wordPress(e.key.toUpperCase());
+      if(e.key==='Backspace') window.wordBack();
+    }
   });
 
   /* Blokir menu konteks + attach hold events */
   const holdBtn = document.getElementById('hold-btn');
-  holdBtn.addEventListener('contextmenu', e=>e.preventDefault());
-  holdBtn.addEventListener('mousedown',   holdStart, { passive: false });
-  holdBtn.addEventListener('mouseup',     holdEnd);
-  holdBtn.addEventListener('mouseleave',  holdEnd);
-  holdBtn.addEventListener('touchstart',  holdStart, { passive: false });
-  holdBtn.addEventListener('touchend',    holdEnd,   { passive: false });
-  holdBtn.addEventListener('touchcancel', holdEnd,   { passive: false });
+  if(holdBtn){
+    holdBtn.addEventListener('contextmenu', e=>e.preventDefault());
+    holdBtn.addEventListener('mousedown',   holdStart, { passive: false });
+    holdBtn.addEventListener('mouseup',     holdEnd);
+    holdBtn.addEventListener('mouseleave',  holdEnd);
+    holdBtn.addEventListener('touchstart',  holdStart, { passive: false });
+    holdBtn.addEventListener('touchend',    holdEnd,   { passive: false });
+    holdBtn.addEventListener('touchcancel', holdEnd,   { passive: false });
+  }
+
+  /* --- Build keyboard huruf (layer 4) --- */
+  (function(){
+    const kb = document.getElementById('keyboard');
+    if(!kb) return;
+    const rows = ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'];
+    rows.forEach(rowText=>{
+      const row = document.createElement('div');
+      row.className = 'kb-row';
+      [...rowText].forEach(ch=>{
+        const b = document.createElement('button');
+        b.className = 'kb-key';
+        b.textContent = ch;
+        b.onclick = ()=>wordPress(ch);
+        row.appendChild(b);
+      });
+      kb.appendChild(row);
+    });
+  })();
+
+  /* --- Init puzzle (layer 3) --- */
+  shuffleBoard();
+  renderPuzzle();
 
   /* Lock scroll + init */
   document.body.style.overflow='hidden';
