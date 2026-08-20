@@ -1,3 +1,12 @@
-﻿*.HEIC
+﻿# Foto web di photos-aniv/web/ IKUT di-commit (46MB, ringan)
+# Foto asli di photos-aniv/ dikecualikan (962MB, berat)
+photos-aniv/*.jpg
+photos-aniv/*.jpeg
+photos-aniv/*.png
+photos-aniv/*.webp
+cnode/
+drive-foto/
+photos/
+*.HEIC
 *.heic
 .trashed-*
