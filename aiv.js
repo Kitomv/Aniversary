@@ -70,75 +70,121 @@ const CONFIG = {
     }
   };
 
-  /* --- Layer 3: Susun potongan foto (3x3 sliding puzzle) --- */
-  const PUZ_N = 3;
-  const PUZ   = PUZ_N*PUZ_N;     // 9
-  let blank  = PUZ-1;            // indeks kosong mulai dari bawah-kanan
-  let board  = [];               // isi tiap sel → potongan id, -1 = kosong
-  let puzzleSolved = false;
+  /* --- Layer 3: Drag & drop susun 4 potongan foto --- */
+  const DD_N = 2;                  // 2x2 = 4 potong
+  const DD_TOTAL = DD_N*DD_N;
+  let ddImg = '';
+  let ddState = [];                // slot → potongan id (0..3) atau -1 kosong
+  let ddTrayIdx = [];              // daftar potongan yang masih di tray
+  let ddSolved = false;
 
-  function selectPuzzleImage(){
-    // pilih foto dari data slides (foto tengah babak 2 atau 3) yang pasti live
+  function selectDdImage(){
     try{
       const slides = window.AIV_DATA && window.AIV_DATA.slides;
-      if(slides && slides[1] && slides[1].photos && slides[1].photos.length){
-        return slides[1].photos[Math.floor(slides[1].photos.length/2)].src;
+      // cari foto dari babak 2/3 (foto tengah) yang pasti ada
+      const cand = [slides[1], slides[2]];
+      for(const s of cand){
+        if(s && s.photos && s.photos.length){
+          const p = s.photos[Math.floor(s.photos.length/2)];
+          if(p) return p.src;
+        }
       }
     }catch(e){}
     return 'photos-aniv/web/IMG-20251115-WA0001.jpg';
   }
-  function shuffleBoard(){
-    // acak legal via langkah acak dari solved state (biar pasti solvable)
-    board = Array.from({length:PUZ}, (_,i)=>i);
-    blank = PUZ-1;
-    for(let s=0; s<120; s++){
-      const nbr = [];
-      const r = Math.floor(blank/PUZ_N), c = blank%PUZ_N;
-      if(r>0) nbr.push(blank-PUZ_N);
-      if(r<PUZ_N-1) nbr.push(blank+PUZ_N);
-      if(c>0) nbr.push(blank-1);
-      if(c<PUZ_N-1) nbr.push(blank+1);
-      const pick = nbr[Math.floor(Math.random()*nbr.length)];
-      board[blank]=board[pick]; board[pick]=-1; blank=pick;
-    }
+  function bgFor(pieceId){
+    // potongan pieceId → posisi background di foto utuh
+    const r = Math.floor(pieceId/DD_N), c = pieceId%DD_N;
+    const posX = c*(100/(DD_N-1)), posY = r*(100/(DD_N-1));
+    return `background-image:url('${ddImg}');background-size:${DD_N*100}% ${DD_N*100}%;background-position:${posX}% ${posY}%`;
   }
-  function renderPuzzle(){
-    const grid = document.getElementById('puzzle-grid');
-    if(!grid) return;
-    const img = selectPuzzleImage();
-    grid.innerHTML='';
-    board.forEach((pieceId, i)=>{
-      const cell = document.createElement('div');
-      cell.className = 'p-cell';
-      if(pieceId===-1){ cell.classList.add('p-blank'); }
-      else{
-        const r = Math.floor(i/PUZ_N), c = i%PUZ_N;
-        const pr= Math.floor(pieceId/PUZ_N), pc= pieceId%PUZ_N;
-        cell.style.backgroundImage = `url('${img}')`;
-        cell.style.backgroundSize = `${PUZ_N*100}% ${PUZ_N*100}%`;
-        cell.style.backgroundPosition = `${pc*(100/(PUZ_N-1))}% ${pr*(100/(PUZ_N-1))}%`;
-        cell.classList.add('p-piece');
-      }
-      cell.addEventListener('click', ()=>tryMove(i));
-      grid.appendChild(cell);
+  function ddReset(){
+    if(current!==3) return;
+    ddSolved = false;
+    ddState = Array(DD_TOTAL).fill(-1);
+    ddTrayIdx = [0,1,2,3];
+    // acak urutan tray
+    for(let i=ddTrayIdx.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [ddTrayIdx[i],ddTrayIdx[j]]=[ddTrayIdx[j],ddTrayIdx[i]];
+    }
+    renderDd();
+  }
+  function renderDd(){
+    const drop = document.getElementById('ddDrop');
+    const tray = document.getElementById('ddTray');
+    if(!drop || !tray) return;
+    if(!ddImg) ddImg = selectDdImage();
+    // render slot
+    drop.innerHTML='';
+    ddState.forEach((pieceId, i)=>{
+      const slot = document.createElement('div');
+      slot.className = 'dd-slot' + (pieceId>-1 ? ' dd-filled':'');
+      if(pieceId>-1) slot.setAttribute('style', bgFor(pieceId));
+      slot.setAttribute('data-idx', i);
+      slot.ondragover = e=>{ e.preventDefault(); };
+      slot.ondrop = e=>{
+        e.preventDefault();
+        const pid = +(e.dataTransfer.getData('text/plain'));
+        if(Number.isInteger(pid) && ddTrayIdx.includes(pid)) placePiece(pid, i);
+      };
+      slot.addEventListener('click', ()=>{ slotClick(i); });
+      drop.appendChild(slot);
+    });
+    // render tray
+    tray.innerHTML='';
+    ddTrayIdx.forEach(pieceId=>{
+      const p = document.createElement('div');
+      p.className='dd-piece';
+      p.setAttribute('style', bgFor(pieceId));
+      p.draggable = true;
+      p.addEventListener('dragstart', e=>{
+        e.dataTransfer.setData('text/plain', String(pieceId));
+        p.classList.add('dragging');
+      });
+      p.addEventListener('dragend', ()=>p.classList.remove('dragging'));
+      p.addEventListener('click', ()=>{ trayClick(pieceId); });
+      tray.appendChild(p);
     });
   }
-  function tryMove(i){
-    if(current!==3 || puzzleSolved) return;
-    // sel i harus adjacent ke blank
-    const dr = Math.abs(Math.floor(i/PUZ_N)-Math.floor(blank/PUZ_N));
-    const dc = Math.abs((i%PUZ_N)-(blank%PUZ_N));
-    if(dr+dc!==1) return;
-    board[blank]=board[i]; board[i]=-1; blank=i;
-    renderPuzzle();
-    // cek menang
-    const won = board.every((v,i)=>v===i);
-    if(won){ puzzleSolved=true; setTimeout(()=>showLayer(4), 550); }
+  function placePiece(pieceId, slotIdx){
+    // taruh potongan ke slot; kalau slot diisi, kembalikan ke tray
+    const prev = ddState[slotIdx];
+    ddState[slotIdx] = pieceId;
+    ddTrayIdx = ddTrayIdx.filter(x=>x!==pieceId);
+    if(prev>-1) ddTrayIdx.push(prev);
+    renderDd();
+    checkDdWin();
   }
-  function resetPuzzle(){
-    puzzleSolved=false; shuffleBoard(); renderPuzzle();
+  function slotClick(i){
+    if(current!==3 || ddSolved) return;
+    // kalau klik slot terisi, kembalikan ke tray
+    if(ddState[i]>-1){
+      ddTrayIdx.push(ddState[i]);
+      ddState[i] = -1;
+      renderDd();
+      return;
+    }
+    // kalau kosong & ada potongan di tray → ambil pertama
+    if(ddTrayIdx.length){
+      const pid = ddTrayIdx[0];
+      placePiece(pid, i);
+    }
   }
-  window.puzzleReset = ()=>{ if(current===3) resetPuzzle(); };
+  function trayClick(pieceId){
+    if(current!==3 || ddSolved) return;
+    // kalau ada slot kosong → taruh di slot kosong pertama
+    const empty = ddState.indexOf(-1);
+    if(empty>-1) placePiece(pieceId, empty);
+  }
+  function checkDdWin(){
+    const won = ddState.every((v,i)=>v===i);
+    if(won){
+      ddSolved=true;
+      document.getElementById('ddDrop').classList.add('dd-glow');
+      setTimeout(()=>{ showLayer(4); }, 600);
+    }
+  }
 
   /* --- Layer 4: Ketik kata rahasia --- */
   function wordRender(){
@@ -262,9 +308,9 @@ const CONFIG = {
     });
   })();
 
-  /* --- Init puzzle (layer 3) --- */
-  shuffleBoard();
-  renderPuzzle();
+  /* --- Init drag & drop (layer 3) --- */
+  ddImg = selectDdImage();
+  ddReset();
 
   /* Lock scroll + init */
   document.body.style.overflow='hidden';

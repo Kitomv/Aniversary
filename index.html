@@ -229,7 +229,7 @@
   <div class="lock-error" id="riddle-error"></div>
 </div>
 
-<!-- ===== LAYER 3 : SUSUN POTONGAN FOTO ===== -->
+<!-- ===== LAYER 3 : DRAG & DROP SUSUN FOTO ===== -->
 <div id="layer3" class="layer hidden">
   <div class="layer-progress">
     <div class="layer-step done"></div>
@@ -241,14 +241,18 @@
   <div class="layer-icon" style="filter:drop-shadow(0 0 22px rgba(236,72,153,.5))">
     <svg style="width:64px;height:64px;margin-bottom:.2rem"><use href="#icon-cameo"/></svg>
   </div>
-  <h2>Susun Foto Kita</h2>
-  <p class="layer-hint" style="margin-bottom:1.3rem">
-    Potongannya berantakan. Sentuh potongan yang bersebelahan dengan kotak kosong untuk menggesernya, sampai fotonya utuh kembali.
+  <h2>Susun Kembali Momen Kita</h2>
+  <p class="layer-hint" style="margin-bottom:1.2rem">
+    Foto kita terbagi jadi 4 potongan. Seret tiap potongan ke tempatnya — atau cukup tap potongannya, dia otomatis pindah ke slot yang kosong.
   </p>
-  <div class="puzzle-wrap">
-    <div class="puzzle-grid" id="puzzle-grid"></div>
-    <button class="puzzle-reset" onclick="puzzleReset()">🔀 Acak Ulang</button>
+  <div class="dd-dropzone" id="ddDrop">
+    <div class="dd-slot" data-idx="0"></div>
+    <div class="dd-slot" data-idx="1"></div>
+    <div class="dd-slot" data-idx="2"></div>
+    <div class="dd-slot" data-idx="3"></div>
   </div>
+  <div class="dd-tray" id="ddTray"></div>
+  <button class="puzzle-reset" onclick="ddReset()">🔀 Acak Ulang</button>
 </div>
 
 <!-- ===== LAYER 4 : KETIK KATA RAHASIA ===== -->
