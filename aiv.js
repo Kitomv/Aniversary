@@ -99,7 +99,7 @@ const CONFIG = {
     return `background-image:url('${ddImg}');background-size:${DD_N*100}% ${DD_N*100}%;background-position:${posX}% ${posY}%`;
   }
   function ddReset(){
-    if(current!==3) return;
+    if(current!==3 && ddImg!=='' ) return;  // init (ddImg belum set) boleh jalan
     ddSolved = false;
     ddState = Array(DD_TOTAL).fill(-1);
     ddTrayIdx = [0,1,2,3];
@@ -667,13 +667,18 @@ reveals.forEach(r=>revealIO.observe(r));
   new MutationObserver(()=>hydrate()).observe(document.body,{childList:true,subtree:true});
 })();
 
-/* ===== ANTI-BLOCK: blokir drag/save/copy/context di seluruh halaman ===== */
+/* ===== ANTI-BLOCK: blokir save/copy/context (drag DIJAGA agar puzzle jalan) ===== */
 (function(){
-  ['contextmenu','selectstart','dragstart','dragover','drop'].forEach(ev=>{
-    document.addEventListener(ev, e=>e.preventDefault());  /* contextmenu/save-as/drag */
+  ['contextmenu','selectstart'].forEach(ev=>{
+    document.addEventListener(ev, e=>e.preventDefault());  /* konteks menu/select */
   });
   ['copy','cut','paste'].forEach(ev=>{
     document.addEventListener(ev, e=>{ e.preventDefault(); });  /* disable copy */
+  });
+  /* blokir drag HANYA untuk img non-dropzone biar foto ga keseret (puzzle tetap bebas) */
+  document.addEventListener('dragstart', e=>{
+    const isDD = e.target.classList && e.target.classList.contains('dd-piece');
+    if(!isDD) e.preventDefault();
   });
   document.addEventListener('keydown', e=>{
     const mod = e.ctrlKey || e.metaKey;
